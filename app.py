@@ -53,7 +53,7 @@ def call_groq_to_rewrite(bad_text, tone_type):
         user_prompt = f"原句：『{bad_text}』\n偵測到的語氣：{tone_type}\n請給出改寫建議："
         
         completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant", # 建議換成目前 Groq 穩定且快速的模型
+            model="openai/gpt-oss-20b", 
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
