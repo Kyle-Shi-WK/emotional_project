@@ -188,4 +188,4 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
 
     btn.click(fn=dual_engine_gui_assistant, inputs=input_box, outputs=output_html)
 
-demo.launch(share=True, debug=True)
+demo.launch(server_name="0.0.0.0", server_port=int(os.environ.get("PORT", 7860)))
