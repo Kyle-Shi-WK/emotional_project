@@ -1,0 +1,8 @@
+gradio
+jieba
+pandas
+scikit-learn
+matplotlib
+seaborn
+sentence-transformers
+groq
