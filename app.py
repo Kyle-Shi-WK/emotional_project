@@ -128,7 +128,7 @@ def dual_engine_gui_assistant(input_text):
 
 # 🌟 Streamlit 前端介面排版
 st.title("🛡️ 雙軌制智慧寫作與防情勒助手")
-st.markdown("本機負責高效率語氣偵測，Groq 雲端負責超自然高情商改寫！")
+st.markdown("本機負責高效率語氣偵測，Groq 自然改寫！")
 
 # 將畫面分為左右兩欄 (比例 1 : 1.2)
 col1, col2 = st.columns([1, 1.2])
