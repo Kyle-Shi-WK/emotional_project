@@ -1,5 +1,4 @@
 import os
-import jieba
 import joblib
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
@@ -12,30 +11,21 @@ st.set_page_config(page_title="防情勒助手", layout="wide")
 @st.cache_resource
 def load_models():
     try:
-        vec = joblib.load('tfidf_vectorizer.pkl')
-        clf = joblib.load('logistic_model.pkl')
+        clf_ml = joblib.load('logistic_model.pkl')
+        anchors_data = joblib.load('anchors_data.pkl')
+        anchors_passive_aggressive = anchors_data['texts']
+        anchor_embeddings = anchors_data['embeddings']
     except FileNotFoundError:
-        st.error("❌ 找不到 tfidf_vectorizer.pkl 或 logistic_model.pkl，請確保檔案已上傳至 GitHub。")
+        st.error("❌ 找不到 logistic_model.pkl 或 anchors_data.pkl，請確保檔案已上傳至 GitHub。")
         st.stop()
     
     # 載入語意模型
     embed = SentenceTransformer('shibing624/text2vec-base-chinese')
-    return vec, clf, embed
+    return clf, embed
 
-vectorizer, clf_ml, embed_model = load_models()
-
-# 擴充情勒與反諷標竿句庫
-anchors_passive_aggressive = [
-    "你好棒棒喔", "真優秀啊", "笑死人", "自以為是",
-    "都是我的錯，我不配", "你高興就好，不用管我", "隨便你，反正我也不重要",
-    "對啦對啦你最厲害", "隨便你行了吧", "是我不夠好"
-]
+clf_ml, embed_model = load_models()
 
 @st.cache_resource
-def get_anchor_embeddings():
-    return embed_model.encode(anchors_passive_aggressive, convert_to_tensor=True)
-
-anchor_embeddings = get_anchor_embeddings()
 
 def call_groq_to_rewrite(bad_text, tone_type):
     # 改從 Streamlit Secrets 或 環境變數讀取 API Key，避免外洩
@@ -81,8 +71,7 @@ def dual_engine_gui_assistant(input_text):
         warning_msg = f"這句話與情勒句『{best_match_sentence}』高度相似，讀起來容易讓人感到被冷暴力或情感威脅。"
     else:
         # 軌道一：常規語氣分類 (本機)
-        cleaned = " ".join(jieba.lcut(input_text))
-        vec = vectorizer.transform([cleaned])
+        vec = embed_model.encode([input_text])
         pred_class = clf_ml.predict(vec)[0]
         
         if pred_class == 0:
@@ -127,8 +116,8 @@ def dual_engine_gui_assistant(input_text):
     return html_output
 
 # 🌟 Streamlit 前端介面排版
-st.title("🛡️ 雙軌制智慧寫作與防情勒助手")
-st.markdown("本機負責高效率語氣偵測，Groq 自然改寫！")
+st.title("🛡️ 智慧改寫與防情勒助手")
+st.markdown("本機負責語氣偵測，Groq 自然改寫！")
 
 # 將畫面分為左右兩欄 (比例 1 : 1.2)
 col1, col2 = st.columns([1, 1.2])
