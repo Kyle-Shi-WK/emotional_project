@@ -19,11 +19,11 @@ def load_models():
         st.error("❌ 找不到 logistic_model.pkl 或 anchors_data.pkl，請確保檔案已上傳至 GitHub。")
         st.stop()
     
-    # 載入語意模型
+    # 載入語意模型(處理使用者網頁上的即時輸入)
     embed = SentenceTransformer('shibing624/text2vec-base-chinese')
-    return clf, embed
+    return clf, embed, anchors_passive_aggressive, anchor_embeddings
 
-clf_ml, embed_model = load_models()
+clf_ml, embed_model, anchors_passive_aggressive, anchor_embeddings = load_models()
 
 @st.cache_resource
 
