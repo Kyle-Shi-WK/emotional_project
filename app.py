@@ -49,7 +49,7 @@ def call_groq_to_rewrite(bad_text, tone_type):
         user_prompt = f"原句：『{bad_text}』\n偵測到的語氣：{tone_type}\n請給出改寫建議："
         
         completion = client.chat.completions.create(
-            model="qwen/qwen3.8-27b", 
+            model="openai/gpt-oss-120b", 
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
