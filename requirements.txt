@@ -6,3 +6,5 @@ seaborn
 sentence-transformers
 groq
 joblib
+torch
+torchvision
