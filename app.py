@@ -11,7 +11,7 @@ st.set_page_config(page_title="防情勒助手", layout="wide")
 @st.cache_resource
 def load_models():
     try:
-        clf_ml = joblib.load('logistic_model.pkl')
+        clf = joblib.load('logistic_model.pkl')
         anchors_data = joblib.load('anchors_data.pkl')
         anchors_passive_aggressive = anchors_data['texts']
         anchor_embeddings = anchors_data['embeddings']
