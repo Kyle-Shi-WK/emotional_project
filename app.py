@@ -70,7 +70,7 @@ def call_groq_to_rewrite(bad_text, tone_type):
 
 def dual_engine_gui_assistant(input_text):
     # 軌道二：SBERT 語意相似度檢測 (反諷/情勒)
-    input_embedding = embed_model.encode(input_text, convert_to_tensor=True)
+    input_embedding = embed_model.encode(input_text, convert_to_tensor=False)
     cosine_scores = util.cos_sim(input_embedding, anchor_embeddings)[0]
     max_irony_score = float(cosine_scores.max())
     best_match_sentence = anchors_passive_aggressive[int(cosine_scores.argmax())]
