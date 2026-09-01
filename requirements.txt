@@ -8,3 +8,5 @@ groq
 joblib
 torch
 torchvision
+transformers
+numpy
