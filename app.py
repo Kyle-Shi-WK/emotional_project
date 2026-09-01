@@ -77,7 +77,7 @@ def dual_engine_gui_assistant(input_text):
     
     theme_color, bg_color, status_tag, warning_msg, tone_label = "", "", "", "", ""
     
-    if max_irony_score > 0.65:
+    if max_irony_score > 0.70:
         theme_color, bg_color = "#c62828", "#ffebee"
         tone_label = "陰陽怪氣與情緒勒索"
         status_tag = f"🔴 偵測到【{tone_label}】"
