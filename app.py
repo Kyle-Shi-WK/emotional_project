@@ -88,12 +88,12 @@ def dual_engine_gui_assistant(input_text):
         pred_label = bert_result['label']        
         confidence = bert_result['score']
         
-        if pred_class == 0:
+        if pred_label == "友善":
             theme_color, bg_color = "#2e7d32", "#e8f5e9"
             status_tag = "🟢 語氣安全 (友善得體)"
             warning_msg = f"語氣非常和善，無潛在衝突風險，可放心發送！(信心度: {confidence:.2%})"
             suggestion = input_text
-        elif pred_class == 1:
+        elif pred_label == "冷淡/不耐煩":
             theme_color, bg_color = "#f57c00", "#fff3e0"
             tone_label = "冷淡敷衍/不耐煩"
             status_tag = f"🟡 語氣警告：{tone_label}"
