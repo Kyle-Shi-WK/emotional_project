@@ -50,8 +50,7 @@ def call_groq_to_rewrite(bad_text, tone_type):
             "【絕對嚴格規定 / STRICT RULES】：\n"
             "1. 絕對不允許輸出你的思考過程 (NO thinking process, NO explanations).\n"
             "2. 只能輸出「一句」繁體中文的修改結果。\n"
-            "3. 不要任何引號或前綴。\n"
-            "4. ⚠️ 若原句包含極度嚴重的人身攻擊或髒話，導致你判斷無法改寫，請統一輸出：「原句攻擊性過強，建議雙方先冷靜後再溝通。」" 
+            "3. 不要任何引號或前綴。" 
         )
         user_prompt = f"原句：『{bad_text}』\n偵測到的語氣：{tone_type}\n請給出改寫建議："
         
