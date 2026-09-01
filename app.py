@@ -1,7 +1,9 @@
 import os
+import torch
 import joblib
 import streamlit as st
 from sentence_transformers import SentenceTransformer, util
+from transformers import pipeline
 from groq import Groq
 
 # 🌟 設定 Streamlit 網頁標題與寬度
@@ -11,7 +13,13 @@ st.set_page_config(page_title="防情勒助手", layout="wide")
 @st.cache_resource
 def load_models():
     try:
-        clf = joblib.load('logistic_model.pkl')
+        device = 0 if torch.cuda.is_available() else -1
+        tone_classifier = pipeline(
+            "text-classification",
+            model="./bert_tone_model",
+            tokenizer="./bert_tone_model",
+            device=device
+        )
         anchors_data = joblib.load('anchors_data.pkl')
         anchors_passive_aggressive = anchors_data['texts']
         anchor_embeddings = anchors_data['embeddings']
@@ -21,10 +29,9 @@ def load_models():
     
     # 載入語意模型(處理使用者網頁上的即時輸入)
     embed = SentenceTransformer('shibing624/text2vec-base-chinese')
-    return clf, embed, anchors_passive_aggressive, anchor_embeddings
+    return tone_classifier, embed, anchors_passive_aggressive, anchor_embeddings
 
-clf_ml, embed_model, anchors_passive_aggressive, anchor_embeddings = load_models()
-
+tone_classifier, embed_model, anchors_passive_aggressive, anchor_embeddings = load_models()
 @st.cache_resource
 
 def call_groq_to_rewrite(bad_text, tone_type):
@@ -62,7 +69,7 @@ def call_groq_to_rewrite(bad_text, tone_type):
         return f"❌ Groq API 呼叫失敗：{str(e)}"
 
 def dual_engine_gui_assistant(input_text):
-    # 軌道二：語意相似度檢測 (本機)
+    # 軌道二：SBERT 語意相似度檢測 (反諷/情勒)
     input_embedding = embed_model.encode(input_text, convert_to_tensor=True)
     cosine_scores = util.cos_sim(input_embedding, anchor_embeddings)[0]
     max_irony_score = float(cosine_scores.max())
@@ -74,27 +81,28 @@ def dual_engine_gui_assistant(input_text):
         theme_color, bg_color = "#c62828", "#ffebee"
         tone_label = "陰陽怪氣與情緒勒索"
         status_tag = f"🔴 偵測到【{tone_label}】"
-        warning_msg = f"這句話與情勒句『{best_match_sentence}』高度相似，讀起來容易讓人感到被冷暴力或情感威脅。"
+        warning_msg = f"這句話與情勒句『{best_match_sentence}』高度相似 (相似度: {max_irony_score:.2f})，讀起來容易讓人感到被冷暴力或情感威脅。"
     else:
-        # 軌道一：常規語氣分類 (本機)
-        vec = embed_model.encode([input_text])
-        pred_class = clf_ml.predict(vec)[0]
+        # 軌道一：BERT 常規語氣分類
+        bert_result = tone_classifier(input_text)[0]
+        pred_label = bert_result['label']        
+        confidence = bert_result['score']
         
         if pred_class == 0:
             theme_color, bg_color = "#2e7d32", "#e8f5e9"
             status_tag = "🟢 語氣安全 (友善得體)"
-            warning_msg = "語氣非常和善，無潛在衝突風險，可放心發送！"
+            warning_msg = f"語氣非常和善，無潛在衝突風險，可放心發送！(信心度: {confidence:.2%})"
             suggestion = input_text
         elif pred_class == 1:
             theme_color, bg_color = "#f57c00", "#fff3e0"
             tone_label = "冷淡敷衍/不耐煩"
             status_tag = f"🟡 語氣警告：{tone_label}"
-            warning_msg = "注意：對方讀起來可能會覺得你在敷衍、冷淡或帶有消極抵抗情緒。"
+            warning_msg = f"注意：對方讀起來可能會覺得你在敷衍、冷淡或帶有消極抵抗情緒。(信心度: {confidence:.2%})"
         else:
             theme_color, bg_color = "#b71c1c", "#efe5e5"
             tone_label = "具直白攻擊性"
             status_tag = f"🔴 語氣危險：{tone_label}"
-            warning_msg = "衝突警告！這句話帶有直白的指責，極易引發爭吵。"
+            warning_msg = f"衝突警告！這句話帶有直白的指責，極易引發爭吵。(信心度: {confidence:.2%})"
             
     if "🟢 語氣安全" not in status_tag:
         suggestion = call_groq_to_rewrite(input_text, tone_label)
