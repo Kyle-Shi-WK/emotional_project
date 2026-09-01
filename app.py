@@ -16,8 +16,8 @@ def load_models():
         device = 0 if torch.cuda.is_available() else -1
         tone_classifier = pipeline(
             "text-classification",
-            model="./bert_tone_model",
-            tokenizer="./bert_tone_model",
+            model="Kyle-Shi-WK/bert-tone-taiwanese",
+            tokenizer="Kyle-Shi-WK/bert-tone-taiwanese",
             device=device
         )
         anchors_data = joblib.load('anchors_data.pkl')
